@@ -56,6 +56,11 @@ builds the tables and the host, renders 108 phrases and compares a hash of each 
 `tests/golden.txt`. A change of any engine's output fails. Felucca runs the same host with its own
 generated tables, so the two cannot drift apart.
 
+It also sweeps 1,890 ANALOG cases (all waves/filter taps, PWM shapes,
+resonance/drive corners and amplitude ramps) against a frozen pre-fix audio
+hash. When available, ASan/UBSan runs this sweep without exclusions or recovery;
+an unavailable sanitizer compiler/runtime is reported as a skip.
+
 ## In Felucca
 
 Felucca includes this repository as a git submodule (`engines/`, next to its `src/`). Its
