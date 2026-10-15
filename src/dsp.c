@@ -66,6 +66,11 @@ static inline int32_t mulq16(int32_t a, uint32_t k)
     return (int32_t)(((a >> 16) * (int32_t)k) + (int32_t)(((uint32_t)(a & 0xFFFF) * k) >> 16));
 }
 static inline int32_t clamp(int32_t v, int32_t lo, int32_t hi) { return v < lo ? lo : v > hi ? hi : v; }
+/* a * b and x << n wrapped to 32 bits in unsigned arithmetic (defined in C; a signed overflow or a left shift
+ * of a negative value is not), back to int32_t modulo 2^32 (GCC, Clang): the bits a two's-complement multiply
+ * or shift gives */
+static inline int32_t mul_wrap(int32_t a, int32_t b) { return (int32_t)((uint32_t)a * (uint32_t)b); }
+static inline int32_t shl(int32_t x, uint32_t n) { return (int32_t)((uint32_t)x << n); }
 
 /* sine, linearly interpolated between the 1024 table points (plain lookup: THD -55 dB) */
 static inline int32_t sine_i(uint32_t ph)

@@ -55,19 +55,21 @@ echo "ok: --fs 44100 writes the default header"
 #   tests/fs_check.c: the pitch of four engines, the filter cutoff and LOFI's TONE pole, measured at FS
 #   tests/fe_host.c's 108 renders: all there, each peak within 1/4 .. 4 x its 44.1 kHz peak (tests/golden.txt;
 #     zero where that is zero)
-#   ASan/UBSan (when available): no memory error, and no undefined-behaviour site that the same build at
-#     44.1 kHz does not have (the rate adds none to the engines' known ones)
-SANR="-O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer"   # UBSan reports and goes on, ASan stops
-san_sites() {   # $1: a build dir with its fe_tables.h: fe_host and fs_check with the sanitizers, their UB sites
-    ${CC:-cc} $SANR -std=c99 -Wno-unused-function -Wno-unused-parameter -I"$1" -o "$1/fe_host_san" tests/fe_host.c
-    ${CC:-cc} $SANR -std=c99 -Wno-unused-function -Wno-unused-parameter -I"$1" -o "$1/fs_check_san" \
+#   ASan/UBSan (when available), strict: no memory error and no undefined behaviour at all, the same
+#     renders as without the sanitizers (at 44.1 kHz: tests/golden.txt)
+san_strict() {   # $1: a build dir with its fe_tables.h: fe_host and fs_check with the sanitizers, stopping at the first error
+    ${CC:-cc} $SAN -std=c99 -Wno-unused-function -Wno-unused-parameter -I"$1" -o "$1/fe_host_san" tests/fe_host.c
+    ${CC:-cc} $SAN -std=c99 -Wno-unused-function -Wno-unused-parameter -I"$1" -o "$1/fs_check_san" \
         tests/fs_check.c -lm
-    "$1/fe_host_san" > /dev/null 2> "$1/ub.txt"
-    "$1/fs_check_san" > /dev/null 2>> "$1/ub.txt"
-    sed -nE 's/^([^ ]+:[0-9]+:[0-9]+): runtime error: .*/\1/p' "$1/ub.txt" | sort -u > "$1/ub_sites.txt"
+    "$1/fe_host_san" > "$1/renders_san.txt"
+    "$1/fs_check_san" > /dev/null
 }
 if [ "$SAN_OK" = 1 ]; then
-    san_sites build/fs44100
+    san_strict build/fs44100
+    cmp tests/golden.txt build/fs44100/renders_san.txt
+    echo "ok: strict ASan/UBSan at FS 44100: no memory error, no undefined behaviour, the 108 golden renders"
+else
+    echo "skip: strict ASan/UBSan at FS 44100 (SANITIZE=0 or unavailable)"
 fi
 for fs in ${FS_CHECK:-48000 96000}; do
     d=build/fs$fs
@@ -92,13 +94,10 @@ r = [got[k] / gold[k] for k in gold if gold[k]]
 print(f"ok: {len(got)} renders at FS {sys.argv[3]}, peaks {min(r):.2f} .. {max(r):.2f} x their 44.1 kHz peaks")
 PY
     if [ "$SAN_OK" = 1 ]; then
-        san_sites $d
-        if comm -13 build/fs44100/ub_sites.txt $d/ub_sites.txt | grep .; then
-            echo "FAIL: undefined behaviour at FS $fs that 44.1 kHz does not have (above; $d/ub.txt)"
-            exit 1
-        fi
-        echo "ok: ASan/UBSan at FS $fs: no memory error, no UB site 44.1 kHz does not have"
+        san_strict $d
+        cmp $d/renders.txt $d/renders_san.txt
+        echo "ok: strict ASan/UBSan at FS $fs: no memory error, no undefined behaviour, the same renders"
     else
-        echo "skip: ASan/UBSan at FS $fs (SANITIZE=0 or unavailable)"
+        echo "skip: strict ASan/UBSan at FS $fs (SANITIZE=0 or unavailable)"
     fi
 done

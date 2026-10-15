@@ -114,7 +114,7 @@ static void noise_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
             cnt = FE_T(1024 + (int32_t)(r & 3071u));   /* blocks (at 44.1 kHz; FE_T: the same time at FS) */
         }
         v->s[3] = (int32_t)((uint32_t)tg << 16 | (uint32_t)cnt);
-        drift += ((tg << 4) - drift) >> (10 + FE_OCT);  /* Q19 */
+        drift += (shl(tg, 4) - drift) >> (10 + FE_OCT);  /* Q19 */
         d16 = ((drift >> 11) * drft * drft) >> 14;    /* up to about +-16 semitones */
         gain = 32767 - ((((32767 - (drift >> 4)) >> 1) * drft) >> 8);   /* down to -6 dB as it falls */
     }
@@ -194,14 +194,14 @@ static void noise_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
         x = w;
         if (colr) {                                   /* pink: three leaky poles (Kellet), brown: a leaky integrator */
             int32_t pk;
-            b0 = ((b0 * FE_NOISE_PINK0_P) >> 15) + ((w * FE_NOISE_PINK0_G) >> 15);   /* (dsp.c: at FS) */
-            b1 = ((b1 * FE_NOISE_PINK1_P) >> 15) + ((w * FE_NOISE_PINK1_G) >> 15);
-            b2 = ((b2 * FE_NOISE_PINK2_P) >> 15) + ((w * FE_NOISE_PINK2_G) >> 14);
+            b0 = (mul_wrap(b0, FE_NOISE_PINK0_P) >> 15) + ((w * FE_NOISE_PINK0_G) >> 15);   /* (dsp.c: at FS) */
+            b1 = (mul_wrap(b1, FE_NOISE_PINK1_P) >> 15) + ((w * FE_NOISE_PINK1_G) >> 15);
+            b2 = (mul_wrap(b2, FE_NOISE_PINK2_P) >> 15) + ((w * FE_NOISE_PINK2_G) >> 14);
             pk = (b0 + b1 + b2 + ((w * 6055) >> 15)) >> 2;
             if (colr <= (64 << 8)) {
                 x = w + mulq15(pk - w, cf);
             } else {
-                br = ((br * FE_NOISE_BROWN_P) >> 15) + ((w * FE_NOISE_BROWN_G) >> 15);
+                br = (mul_wrap(br, FE_NOISE_BROWN_P) >> 15) + ((w * FE_NOISE_BROWN_G) >> 15);
                 x = pk + mulq15(br - pk, cf);
             }
         }
@@ -216,13 +216,13 @@ static void noise_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
         y = v2 + (((v1 - v2) * (mix >> 3)) >> 12);
         y = soft_knee(((y >> 4) * gq) >> 8, 24000);
         if (mode == NZ_META) {                        /* the knee bends a lopsided tone: a DC blocker, ~14 Hz */
-            reg += (uint32_t)(((y << 8) - (int32_t)reg) >> (9 + FE_OCT));
+            reg += (uint32_t)((shl(y, 8) - (int32_t)reg) >> (9 + FE_OCT));
             y -= (int32_t)reg >> 8;
         }
         if (crsh) {                                   /* hold 1..16 samples (at 44.1 kHz), 16 .. 4 bits */
             if ((int32_t)--ph <= 0 || ph > (uint32_t)FE_T(16)) {
                 ph = FE_HOLD(1u + (uint32_t)crsh / 8u);
-                reg = (uint32_t)(y >> (crsh / 11) << (crsh / 11));
+                reg = (uint32_t)shl(y >> (crsh / 11), (uint32_t)(crsh / 11));
             }
             y = (int32_t)reg;
         }

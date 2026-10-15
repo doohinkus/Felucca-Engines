@@ -78,13 +78,14 @@ generated tables, so the two cannot drift apart.
 
 It also sweeps 1,890 ANALOG cases (all waves/filter taps, PWM shapes,
 resonance/drive corners and amplitude ramps) against a frozen pre-fix audio
-hash. When available, ASan/UBSan runs this sweep without exclusions or recovery;
+hash. When available, ASan/UBSan runs this sweep, and the 108 phrases and `tests/fs_check.c` at
+every rate checked, without exclusions or recovery (the sanitized renders must be the same);
 an unavailable sanitizer compiler/runtime is reported as a skip.
 
 Then the other rates: it checks that `--fs 44100` writes the default header byte for byte, and at
 48 and 96 kHz (`FS_CHECK="32000 88200"` for others) measures the pitch of four engines, the filter
 cutoff and LOFI's tone filter (`tests/fs_check.c`), renders the 108 phrases (each peak near its
-44.1 kHz one) and, with ASan/UBSan, checks that the rate adds no memory error or undefined behaviour.
+44.1 kHz one).
 
 ## In Felucca
 

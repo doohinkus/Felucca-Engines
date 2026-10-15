@@ -159,8 +159,8 @@ static result_t render(const engine_t *e, const preset_t *pr, uint32_t part, int
             m.amp0 = last[k];
             m.amp1 = a;
             m.envq15 = a;
-            m.cutoff = ((int32_t)(b % 96u) - 48) << 7;  /* a slow triangle-ish sweep of +-24 << 8 */
-            m.shape = (64 << 8) + (((int32_t)(b % 64u) - 32) << 8);
+            m.cutoff = ((int32_t)(b % 96u) - 48) * 128; /* a slow triangle-ish sweep of +-24 << 8 */
+            m.shape = (64 << 8) + ((int32_t)(b % 64u) - 32) * 256;
             last[k] = a;
             e->render(t, v, out, CTL, &m);
         }
