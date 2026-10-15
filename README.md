@@ -2,7 +2,8 @@
 
 Five synthesis engines of [Felucca](https://github.com/hugelton/Felucca), with the DSP helpers
 and the tables they share, under the MIT licence. Plain C99, fixed point only (no float, no
-allocation, no library calls), written for a small 32-bit microcontroller at 44.1 kHz.
+allocation, no library calls), written for a small 32-bit microcontroller at 44.1 kHz; the sample
+rate is a build-time choice (32 to 96 kHz, see [Sample rate](#sample-rate)).
 
 | Engine | File | What it is |
 | --- | --- | --- |
@@ -19,7 +20,7 @@ Shared:
 - `src/dsp.c`: oscillators with polyBLEP, the state-variable filter, soft clipping, noise, the
   amplitude ramp (all `static inline`).
 - `tools/gen_engine_tables.py`: the lookup tables (`SINE`, `PITCH_OCT` / `pitch_inc()`, `SVF_G`,
-  `TANH_Q15`, `FS`, `CTL`) as a C header.
+  `TANH_Q15`, `FS`, `CTL`) as a C header, for 44.1 kHz or the rate you give it.
 
 ## Using the engines
 
@@ -46,6 +47,25 @@ fields that LOFI and WHEEL read.
 
 `tests/fe_host.c` is a complete, minimal host: it plays every preset through a short phrase.
 
+## Sample rate
+
+The rate is chosen when the tables are generated; the default is 44100 Hz (Felucca's):
+
+```sh
+python3 tools/gen_engine_tables.py fe_tables.h               # 44.1 kHz
+python3 tools/gen_engine_tables.py --fs 48000 fe_tables.h    # 48 kHz (32000 .. 192000)
+```
+
+Build the engines with that header as above; nothing else changes. At another rate the header also
+carries the engines' rate constants, and `src/dsp.c` moves what the engines time in samples or blocks
+(sample holds, filter corners, decays, the LOFI arpeggio and vibrato, the WHEEL rotors, the NOISE drift)
+to the new rate at compile time, so there is no cost per sample. `CTL` stays 32 samples. At 44100 the
+header and the output are exactly what they were before the rate became a choice.
+
+32 to 96 kHz is supported; up to 192 kHz builds and plays. The limits of the fixed point (the lowest
+filter cutoffs get coarser at high rates, some corners move by up to half an octave between the octave
+steps, white noise is quieter in the audible band at high rates) are listed in `src/felucca_engine.h`.
+
 ## Tests
 
 ```sh
@@ -60,6 +80,11 @@ It also sweeps 1,890 ANALOG cases (all waves/filter taps, PWM shapes,
 resonance/drive corners and amplitude ramps) against a frozen pre-fix audio
 hash. When available, ASan/UBSan runs this sweep without exclusions or recovery;
 an unavailable sanitizer compiler/runtime is reported as a skip.
+
+Then the other rates: it checks that `--fs 44100` writes the default header byte for byte, and at
+48 and 96 kHz (`FS_CHECK="32000 88200"` for others) measures the pitch of four engines, the filter
+cutoff and LOFI's tone filter (`tests/fs_check.c`), renders the 108 phrases (each peak near its
+44.1 kHz one) and, with ASan/UBSan, checks that the rate adds no memory error or undefined behaviour.
 
 ## In Felucca
 

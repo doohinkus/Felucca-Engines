@@ -295,7 +295,7 @@ static void trio_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
     if (mode >= 2u)
         mb = -(k >> 2);                                 /* HP / notch: in - k bp (- lp) */
     /* the cutoff wanders a little, once per block (the slightly unstable filter of the chips) */
-    drift += (((int32_t)(noise32(&nst) >> 22) - 512) - drift) >> 3;
+    drift += (((int32_t)(noise32(&nst) >> 22) - 512) - drift) >> (3 + FE_OCT);
     cut = clamp((p[P_E5] << 8) + m->cutoff + drift, 0, 127 << 8);
     tsvf_coef_k(&flt, cut, k);
     a1 = flt.a1;
