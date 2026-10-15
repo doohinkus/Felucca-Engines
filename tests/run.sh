@@ -22,3 +22,21 @@ else
     echo "FAIL: the renders above differ from tests/golden.txt"
     exit 1
 fi
+
+# ANALOG signed scaling: frozen audio hash, then the same sweep without UBSan exclusions.
+${CC:-cc} -O2 -std=c99 -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Ibuild \
+    -o build/analog_signed_test tests/analog_signed_test.c
+build/analog_signed_test
+SAN="-O1 -g -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
+if [ "${SANITIZE:-1}" = 0 ]; then
+    echo "skip: ANALOG strict ASan/UBSan (SANITIZE=0)"
+else
+    printf 'int main(void){return 0;}\n' > build/san_probe.c
+    if ${CC:-cc} $SAN -o build/san_probe build/san_probe.c 2>/dev/null && build/san_probe; then
+        ${CC:-cc} $SAN -std=c99 -Wno-unused-function -Wno-unused-parameter -Ibuild \
+            -o build/analog_signed_strict tests/analog_signed_test.c
+        build/analog_signed_strict
+    else
+        echo "skip: ANALOG strict ASan/UBSan (compiler/runtime unavailable)"
+    fi
+fi
