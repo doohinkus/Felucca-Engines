@@ -1,6 +1,6 @@
 # Felucca-Engines
 
-Five synthesis engines of [Felucca](https://github.com/hugelton/Felucca), with the DSP helpers
+Six synthesis engines of [Felucca](https://github.com/hugelton/Felucca), with the DSP helpers
 and the tables they share, under the MIT licence. Plain C99, fixed point only (no float, no
 allocation, no library calls), written for a small 32-bit microcontroller at 44.1 kHz; the sample
 rate is a build-time choice (32 to 96 kHz, see [Sample rate](#sample-rate)).
@@ -12,6 +12,7 @@ rate is a build-time choice (32 to 96 kHz, see [Sample rate](#sample-rate)).
 | TRIO | `src/eng_trio.c` | Three oscillators with ring modulation, hard sync and combined (AND) waves into a 12 dB/oct multimode filter |
 | WHEEL | `src/eng_wheel.c` | A tonewheel-style additive organ: nine drawbar partials, 16 registrations, percussion, key click, drive and a rotary effect |
 | NOISE | `src/eng_noise.c` | White / pink / brown noise, random impulses and shift-register noise through a resonant filter, with drift and a bit crusher |
+| PHASE | `src/eng_phase.c` | Phase distortion: eight waves (bent-phase cosines and windowed resonant sines), a second wave every other cycle, a detuned second line mixed or ring-modulated, a sub oscillator and a sine wavefolder |
 
 Shared:
 
@@ -38,7 +39,7 @@ static track_t trk[NPART];
 #include "eng_analog.c"             /* ... the engines you want */
 ```
 
-Each engine is an `engine_t` (`ENG_ANALOG`, `ENG_LOFI`, `ENG_TRIO`, `ENG_WHEEL`, `ENG_NOISE`):
+Each engine is an `engine_t` (`ENG_ANALOG`, `ENG_LOFI`, `ENG_TRIO`, `ENG_WHEEL`, `ENG_NOISE`, `ENG_PHASE`):
 its eight parameters with their ranges and names, its presets, and the functions the host calls
 per voice (`note_on`, `render`) and per block (`block`, `amp`). `render` adds one block (at most
 `CTL` = 32 samples) of a voice to a buffer. The header documents the rest of the contract: the
@@ -72,25 +73,25 @@ steps, white noise is quieter in the audible band at high rates) are listed in `
 sh tests/run.sh
 ```
 
-builds the tables and the host, renders 108 phrases and compares a hash of each with
+builds the tables and the host, renders 122 phrases and compares a hash of each with
 `tests/golden.txt`. A change of any engine's output fails. Felucca runs the same host with its own
 generated tables, so the two cannot drift apart.
 
 It also sweeps 1,890 ANALOG cases (all waves/filter taps, PWM shapes,
 resonance/drive corners and amplitude ramps) against a frozen pre-fix audio
-hash. When available, ASan/UBSan runs this sweep, and the 108 phrases and `tests/fs_check.c` at
+hash. When available, ASan/UBSan runs this sweep, and the 122 phrases and `tests/fs_check.c` at
 every rate checked, without exclusions or recovery (the sanitized renders must be the same);
 an unavailable sanitizer compiler/runtime is reported as a skip.
 
 Then the other rates: it checks that `--fs 44100` writes the default header byte for byte, and at
 48 and 96 kHz (`FS_CHECK="32000 88200"` for others) measures the pitch of four engines, the filter
-cutoff and LOFI's tone filter (`tests/fs_check.c`), renders the 108 phrases (each peak near its
+cutoff and LOFI's tone filter (`tests/fs_check.c`), renders the 122 phrases (each peak near its
 44.1 kHz one).
 
 ## In Felucca
 
 Felucca includes this repository as a git submodule (`engines/`, next to its `src/`). Its
-`engines.c` includes `dsp.c` and the five `eng_*.c` files from here, its `core.h` includes
+`engines.c` includes `dsp.c` and the six `eng_*.c` files from here, its `core.h` includes
 `felucca_engine.h`, and its table generator imports `tools/gen_engine_tables.py`. The firmware
 built from them is GPL-3.0-only as a whole; the files of this repository stay MIT.
 

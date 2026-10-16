@@ -53,7 +53,7 @@ echo "ok: --fs 44100 writes the default header"
 
 # Other rates (FS_CHECK, "48000 96000" by default): the tables at FS, then
 #   tests/fs_check.c: the pitch of four engines, the filter cutoff and LOFI's TONE pole, measured at FS
-#   tests/fe_host.c's 108 renders: all there, each peak within 1/4 .. 4 x its 44.1 kHz peak (tests/golden.txt;
+#   tests/fe_host.c's 122 renders: all there, each peak within 1/4 .. 4 x its 44.1 kHz peak (tests/golden.txt;
 #     zero where that is zero)
 #   ASan/UBSan (when available), strict: no memory error and no undefined behaviour at all, the same
 #     renders as without the sanitizers (at 44.1 kHz: tests/golden.txt)
@@ -67,7 +67,7 @@ san_strict() {   # $1: a build dir with its fe_tables.h: fe_host and fs_check wi
 if [ "$SAN_OK" = 1 ]; then
     san_strict build/fs44100
     cmp tests/golden.txt build/fs44100/renders_san.txt
-    echo "ok: strict ASan/UBSan at FS 44100: no memory error, no undefined behaviour, the 108 golden renders"
+    echo "ok: strict ASan/UBSan at FS 44100: no memory error, no undefined behaviour, the 122 golden renders"
 else
     echo "skip: strict ASan/UBSan at FS 44100 (SANITIZE=0 or unavailable)"
 fi
