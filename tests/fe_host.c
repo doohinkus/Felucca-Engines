@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT
  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
-/* Felucca-Engines: a standalone host. Renders every preset of the six engines through a fixed phrase on a
+/* Felucca-Engines: a standalone host. Renders every preset of the seven engines through a fixed phrase on a
  * minimal track / voice / envelope and prints one line per render: an FNV-1a 64 hash of the output and its
  * peak. tests/run.sh compares the lines with tests/golden.txt: a change of any engine's sound fails.
  *   cc -O2 -I build -o fe_host tests/fe_host.c          (build/fe_tables.h from tools/gen_engine_tables.py)
@@ -34,10 +34,11 @@ static track_t trk[NPART];
 #include "../src/eng_trio.c"
 #include "../src/eng_wheel.c"
 #include "../src/eng_noise.c"
+#include "../src/eng_chaos.c"            /* felucca-lab slice 1 */
 
 static const struct { const char *id; const engine_t *e; } ENGS[] = {
     {"analog", &ENG_ANALOG}, {"lofi", &ENG_LOFI}, {"trio", &ENG_TRIO}, {"wheel", &ENG_WHEEL}, {"noise", &ENG_NOISE},
-    {"phase", &ENG_PHASE},
+    {"phase", &ENG_PHASE}, {"chaos", &ENG_CHAOS},
 };
 
 /* ------------------------------------------------- a minimal voice host --- */

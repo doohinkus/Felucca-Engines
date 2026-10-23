@@ -67,7 +67,7 @@ san_strict() {   # $1: a build dir with its fe_tables.h: fe_host and fs_check wi
 if [ "$SAN_OK" = 1 ]; then
     san_strict build/fs44100
     cmp tests/golden.txt build/fs44100/renders_san.txt
-    echo "ok: strict ASan/UBSan at FS 44100: no memory error, no undefined behaviour, the 122 golden renders"
+    echo "ok: strict ASan/UBSan at FS 44100: no memory error, no undefined behaviour, the 127 golden renders"
 else
     echo "skip: strict ASan/UBSan at FS 44100 (SANITIZE=0 or unavailable)"
 fi

@@ -35,6 +35,9 @@ phase/2 bedb6e3c0293dd80 85192 STRING
 phase/3 f2bdb066bb67f957 48872 RESO
 phase/4 6947c82009ec3762 47014 BELL
 phase/5 6fdc0bd587a312a4 117796 WIRE
+chaos/0 8fa36805cc64cb83 79382 MURMUR
+chaos/1 bcbdc4be0feb5083 88398 BUTTERFLY
+chaos/2 252378361689c094 118300 COLONY
 analog/0/ftype1 ef577d05f58184ca 33554 SAW LEAD
 analog/0/ftype2 15d10b87624f7bc4 58054 SAW LEAD
 analog/1/ftype1 5bf5f8ba51566fa7 25228 SOFT PAD
@@ -115,6 +118,8 @@ phase/e0=4 b494ad1d96efe225 119008
 phase/e0=5 3a6251fb92f2e441 50066
 phase/e0=6 4b62bc43e76cfce1 53394
 phase/e0=7 9e45cd4aa679aeaf 64350
+chaos/e0=0 8bfc4c83f4114eb8 104378
+chaos/e0=1 66dc700bc7a23963 104846
 lofi/wave=0 bec14a2a2b2d3896 70663
 lofi/wave=1 3da02e7e8e4db299 49665
 lofi/wave=2 c1a25ddee0003472 43532
