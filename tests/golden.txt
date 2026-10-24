@@ -38,6 +38,10 @@ phase/5 6fdc0bd587a312a4 117796 WIRE
 chaos/0 8fa36805cc64cb83 79382 MURMUR
 chaos/1 bcbdc4be0feb5083 88398 BUTTERFLY
 chaos/2 252378361689c094 118300 COLONY
+shep/0 f4cdb61f8afee559 120032 ESCALATOR
+shep/1 259b1130a4d5e567 78812 NORETURN
+walsh/0 0cf054a5ba450d62 28344 GLASS
+walsh/1 69e9b5a9f6cfd0e7 9183 ORGAN
 analog/0/ftype1 ef577d05f58184ca 33554 SAW LEAD
 analog/0/ftype2 15d10b87624f7bc4 58054 SAW LEAD
 analog/1/ftype1 5bf5f8ba51566fa7 25228 SOFT PAD
@@ -120,6 +124,14 @@ phase/e0=6 4b62bc43e76cfce1 53394
 phase/e0=7 9e45cd4aa679aeaf 64350
 chaos/e0=0 8bfc4c83f4114eb8 104378
 chaos/e0=1 66dc700bc7a23963 104846
+shep/e0=0 32f5813a1cb5ff5f 136360
+shep/e0=1 11f8dd227be4bcda 141630
+shep/e0=2 5d1748d141d6d4e6 153406
+walsh/e0=0 52fd950b7ab492a1 38516
+walsh/e0=1 a441c4fc36ff9f50 32012
+walsh/e0=2 0cf054a5ba450d62 28344
+walsh/e0=3 463172c150df5669 25937
+walsh/e0=4 9f66b4e14b1f69ea 25897
 lofi/wave=0 bec14a2a2b2d3896 70663
 lofi/wave=1 3da02e7e8e4db299 49665
 lofi/wave=2 c1a25ddee0003472 43532
