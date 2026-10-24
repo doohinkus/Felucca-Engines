@@ -58,9 +58,9 @@ static void chaos_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const
     uint32_t x = (uint32_t)v->s[4], x2 = (uint32_t)v->s[5];
     uint32_t clk = v->ph[1], ph0 = v->ph[0];             /* state in locals: out[] may alias v->s[] */
     int32_t ic1 = v->s[0], ic2 = v->s[1], off = v->s[6];
-    if ((clk += step) >= 0x10000u) {                    /* a tick (step < 2^16: never more than one) */
+    if ((clk += step) >= 65536u) {                      /* a tick (step < 2^16: never more than one) */
         uint32_t nx;
-        clk -= 0x10000u;
+        clk -= 65536u;
         nx = chaos_step(x, r);
         x = nx < 2u || nx > 65534u ? 3u : nx;           /* off the ends: 3 runs back into the attractor */
         if (pair) {

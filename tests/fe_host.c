@@ -35,10 +35,11 @@ static track_t trk[NPART];
 #include "../src/eng_wheel.c"
 #include "../src/eng_noise.c"
 #include "../src/eng_chaos.c"            /* felucca-lab slice 1 */
+#include "../src/eng_shep.c"             /* felucca-lab slice 2 */
 
 static const struct { const char *id; const engine_t *e; } ENGS[] = {
     {"analog", &ENG_ANALOG}, {"lofi", &ENG_LOFI}, {"trio", &ENG_TRIO}, {"wheel", &ENG_WHEEL}, {"noise", &ENG_NOISE},
-    {"phase", &ENG_PHASE}, {"chaos", &ENG_CHAOS},
+    {"phase", &ENG_PHASE}, {"chaos", &ENG_CHAOS}, {"shep", &ENG_SHEP},
 };
 
 /* ------------------------------------------------- a minimal voice host --- */
