@@ -61,10 +61,13 @@ static void harm_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
             src += (dreed * (int32_t)drone) >> 14;
         }
 
-        /* tone colouring */
-        if (tone == 0) {
-            src = (src + osc_sine(ph)) >> 1;
-        }
+        /* tone colouring: blend the reed with the selected carrier wave */
+        int32_t carrier;
+        if (tone == 1) carrier = osc_tri(ph);
+        else if (tone == 2) carrier = (ph & 0x8000) ? 32767 : -32767;
+        else if (tone == 3) carrier = osc_saw(ph, inc);
+        else carrier = osc_sine(ph);
+        src = (src + carrier) >> 1;
 
         int32_t filt = tsvf_lp(&flt, src, &ic1, &ic2);
         filt = soft_knee(filt, 16000);
