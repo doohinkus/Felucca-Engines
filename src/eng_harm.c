@@ -36,10 +36,7 @@ static void harm_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
 
     uint32_t i;
     for (i = 0; i < n; i++) {
-        int32_t drift = (int32_t)(v->age & 0xFF) - 128;
-        int32_t target = 32767 + (drift * 16);
-        if (target < 16384) target = 16384;
-        if (target > 32767) target = 32767;
+        int32_t target = 32767;
         /* bellow lag: asymmetric attack (fast) / release (slow), rate from BELLOW */
         int32_t rate = (bellow < 64) ? (bellow + 8) : (128 - bellow);
         if (press < target)
@@ -47,6 +44,9 @@ static void harm_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
         else
             press += ((target - press) * (int32_t)(rate + 4)) >> 12;
         if (press < 0) press = 0;
+        /* slow drift on pressure (bellow) */
+        int32_t drift = (int32_t)(v->age & 0xFF) - 128;
+        press += drift >> 6;
         if (press < 0) press = 0;
         if (press > 32767) press = 32767;
 
@@ -113,5 +113,5 @@ static const engine_t ENG_HARM = {
     .note_on = harm_note_on,
     .render = harm_render,
     .knob = {P_E6, P_E3, P_E1, P_REL},
-    .keep = 0x0F,                /* resonator (s0..1) + bellow (s2) + chiff (s3) */
+    .keep = 0x0F,                /* filter (s0..1) + bellow pressure (s2) + chiff (s3) */
 };
