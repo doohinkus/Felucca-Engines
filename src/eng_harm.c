@@ -36,22 +36,13 @@ static void harm_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
 
     uint32_t i;
     for (i = 0; i < n; i++) {
+        /* bellow lag: one-pole toward full pressure, rate from BELLOW */
         int32_t target = 32767;
-        /* bellow lag: asymmetric attack (fast) / release (slow), rate from BELLOW */
-        int32_t rate = (bellow < 64) ? (bellow + 8) : (128 - bellow);
-        if (press < target)
-            press += ((target - press) * (int32_t)(rate + 16)) >> 10;
-        else
-            press += ((target - press) * (int32_t)(rate + 4)) >> 12;
+        press += ((target - press) * (int32_t)(bellow + 1)) >> 12;
         if (press < 0) press = 0;
-        /* slow drift on pressure (bellow) */
-        int32_t drift = (int32_t)(v->age & 0xFF) - 128;
-        press += drift >> 6;
-        if (press < 0) press = 0;
-        if (press > 32767) press = 32767;
 
-        /* chiff: fast attack burst, exponential-ish decay */
-        chiffenv -= (int32_t)((chiff + 2) * (chiffenv >> 8)) >> 6;
+        /* chiff decay */
+        chiffenv -= (int32_t)(chiff + 4);
         if (chiffenv < 0) chiffenv = 0;
 
         uint32_t inc = pitch_inc((uint32_t)clamp(m->pitch16, 0, 2047));
@@ -70,13 +61,10 @@ static void harm_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
             src += (dreed * (int32_t)drone) >> 14;
         }
 
-        /* tone colouring: blend the reed with the selected carrier wave */
-        int32_t carrier;
-        if (tone == 1) carrier = osc_tri(ph);
-        else if (tone == 2) carrier = (ph & 0x8000) ? 32767 : -32767;
-        else if (tone == 3) carrier = osc_saw(ph, inc);
-        else carrier = osc_sine(ph);
-        src = (src + carrier) >> 1;
+        /* tone colouring */
+        if (tone == 0) {
+            src = (src + osc_sine(ph)) >> 1;
+        }
 
         int32_t filt = tsvf_lp(&flt, src, &ic1, &ic2);
         filt = soft_knee(filt, 16000);
