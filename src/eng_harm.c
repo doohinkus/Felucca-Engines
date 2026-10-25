@@ -13,7 +13,8 @@ static const char *const N_HARM_TONE[] = {"SIN", "TRI", "SQR", "SAW"};
 static void harm_note_on(track_t *t, voice_t *v)
 {
     (void)t;
-    v->s[0] = v->s[1] = 0;   /* resonator */
+    v->s[0] = v->s[1] = 0;   /* resonator 1 */
+    v->s[4] = v->s[5] = 0;   /* resonator 2 */
     v->s[2] = 0;              /* bellow pressure lag */
     v->s[3] = 32767;          /* chiff envelope (full on attack) */
     v->ph[0] = 0;
@@ -28,11 +29,14 @@ static void harm_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
     uint32_t tone = (uint32_t)p[P_E5] & 3u;
 
     int32_t ic1 = v->s[0], ic2 = v->s[1];
+    int32_t ic3 = v->s[4], ic4 = v->s[5];
     int32_t press = v->s[2];   /* bellow pressure lag, Q15 */
     int32_t chiffenv = v->s[3];
 
     tsvf_t flt;
     tsvf_coef(&flt, (p[P_E6] << 8) + m->cutoff, p[P_E7]);
+    tsvf_t flt2;
+    tsvf_coef(&flt2, (((p[P_E6] + 24) & 127) << 8) + m->cutoff, p[P_E7]);
 
     uint32_t i;
     for (i = 0; i < n; i++) {
@@ -78,13 +82,17 @@ static void harm_render(track_t *t, voice_t *v, int32_t *out, uint32_t n, const 
         else carrier = osc_sine(ph);
         src = (src + carrier) >> 1;
 
-        int32_t filt = tsvf_lp(&flt, src, &ic1, &ic2);
+        int32_t filt1 = tsvf_lp(&flt, src, &ic1, &ic2);
+        int32_t filt2 = tsvf_lp(&flt2, src, &ic3, &ic4);
+        int32_t filt = (filt1 + filt2) >> 1;
         filt = soft_knee(filt, 16000);
         out[i] += voice_amp(filt, m, i);
     }
 
     v->s[0] = ic1;
     v->s[1] = ic2;
+    v->s[4] = ic3;
+    v->s[5] = ic4;
     v->s[2] = press;
     v->s[3] = chiffenv;
 }
@@ -113,5 +121,5 @@ static const engine_t ENG_HARM = {
     .note_on = harm_note_on,
     .render = harm_render,
     .knob = {P_E6, P_E3, P_E1, P_REL},
-    .keep = 0x0F,                /* filter (s0..1) + bellow pressure (s2) + chiff (s3) */
+    .keep = 0x3F,                /* resonators (s0..1, s4..5) + bellow (s2) + chiff (s3) */
 };
